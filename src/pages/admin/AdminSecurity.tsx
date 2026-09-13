@@ -67,8 +67,8 @@ export const AdminSecurity: React.FC = () => {
       return;
     }
 
-    if (!/^[a-zA-Z0-9_.-]+$/.test(usernameToUpdate)) {
-      setError('Username may only contain letters, numbers, dots, hyphens, and underscores.');
+    if (!/^[a-zA-Z0-9_@.-]+$/.test(usernameToUpdate)) {
+      setError('Username may only contain letters, numbers, @, dots, hyphens, and underscores.');
       return;
     }
 

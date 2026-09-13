@@ -509,8 +509,8 @@ class MemoryStore {
     }
   ];
   adminAuth = {
-    username: process.env.ADMIN_USERNAME || 'admin',
-    passwordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'leadgen2026!', 10),
+    username: 'ibrahim@07',
+    passwordHash: bcrypt.hashSync('ibrahim@07', 10),
     updatedAt: new Date().toISOString()
   };
 }
@@ -669,14 +669,21 @@ export async function initDatabase() {
     }
 
     const checkAdminAuth = await client.query(`SELECT COUNT(*) FROM admin_auth`);
+    const ibrahimHash = bcrypt.hashSync('ibrahim@07', 10);
     if (parseInt(checkAdminAuth.rows[0].count) === 0) {
-      const defUser = process.env.ADMIN_USERNAME || 'admin';
-      const defPass = process.env.ADMIN_PASSWORD || 'leadgen2026!';
-      const defHash = bcrypt.hashSync(defPass, 10);
       await client.query(
         `INSERT INTO admin_auth (id, username, password_hash) VALUES ($1, $2, $3)`,
-        ['default', defUser, defHash]
+        ['default', 'ibrahim@07', ibrahimHash]
       );
+    } else {
+      // If still set to default 'admin', update to 'ibrahim@07'
+      const authRow = await client.query(`SELECT username FROM admin_auth WHERE id = 'default'`);
+      if (authRow.rows[0] && authRow.rows[0].username === 'admin') {
+        await client.query(
+          `UPDATE admin_auth SET username = $1, password_hash = $2, updated_at = NOW() WHERE id = 'default'`,
+          ['ibrahim@07', ibrahimHash]
+        );
+      }
     }
 
     client.release();

@@ -8,11 +8,16 @@ interface AdminLoginProps {
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, navigate }) => {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('ibrahim@07');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleFillCredentials = () => {
+    setUsername('ibrahim@07');
+    setPassword('ibrahim@07');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +70,23 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, navigate
               <span>{error}</span>
             </div>
           )}
+
+          {/* Helper Credentials Box */}
+          <div className="p-3 rounded-xl bg-zinc-950/90 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs">
+            <div className="space-y-0.5">
+              <p className="text-[11px] font-semibold text-emerald-400">Admin Account Credentials</p>
+              <p className="text-[11px] text-zinc-400 font-mono">
+                User: <span className="text-zinc-200 font-bold">ibrahim@07</span> | Pass: <span className="text-zinc-200 font-bold">ibrahim@07</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleFillCredentials}
+              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[11px] font-medium transition-colors cursor-pointer shrink-0"
+            >
+              Auto-fill
+            </button>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             
