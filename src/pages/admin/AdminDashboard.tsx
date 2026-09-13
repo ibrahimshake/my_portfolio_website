@@ -21,7 +21,8 @@ import {
   Reply,
   RefreshCw,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  KeyRound
 } from 'lucide-react';
 import type { SiteStats, Project, LeadSample, ContactMessage } from '../../types';
 import { api } from '../../lib/api';
@@ -579,6 +580,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setTab, navigate
             <div>
               <span className="text-xs font-bold text-zinc-100 block">Edit Profile & Bio</span>
               <span className="text-[10px] text-zinc-400 block">Title & Socials</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setTab('security')}
+            className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-950/20 hover:bg-emerald-950/40 text-left transition-colors flex items-center gap-3 group sm:col-span-2 md:col-span-4"
+          >
+            <KeyRound className="h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <div className="flex-1 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-emerald-300 block">Change Admin Credentials & Password</span>
+                <span className="text-[10px] text-zinc-400 block">Update your administrator username and secure login password</span>
+              </div>
+              <span className="text-[11px] text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/30 hidden sm:inline">
+                Security Settings →
+              </span>
             </div>
           </button>
         </div>

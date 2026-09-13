@@ -13,14 +13,16 @@ import {
   LayoutDashboard,
   ShieldAlert
 } from 'lucide-react';
+import type { Profile } from '../types';
 
 interface NavbarProps {
   currentPath: string;
   navigate: (path: string) => void;
-  isAdminLoggedIn: boolean;
+  isAdminLoggedIn?: boolean;
+  profile?: Profile | null;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, isAdminLoggedIn }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, isAdminLoggedIn, profile }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -40,6 +42,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, isAdminLo
     setMobileMenuOpen(false);
   };
 
+  const displayName = profile?.fullName || 'Ibrahim Shake Shuvo';
+  const displayTitle = profile?.title || 'B2B Lead Gen & Scraping';
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-zinc-950/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -47,17 +52,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, isAdminLo
         {/* Brand */}
         <button 
           onClick={() => handleNav('/')}
-          className="group flex items-center gap-2.5 text-left transition-all"
+          className="group flex items-center gap-2.5 text-left transition-all cursor-pointer"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-950/40 text-emerald-400 group-hover:border-emerald-500/60 group-hover:bg-emerald-900/40 transition-colors">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-950/40 text-emerald-400 group-hover:border-emerald-500/60 group-hover:bg-emerald-900/40 transition-colors shrink-0">
             <Database className="h-4 w-4" />
           </div>
-          <div>
-            <span className="text-sm font-semibold tracking-tight text-zinc-100 block">
-              Ibrahim Shakes Huvo
+          <div className="min-w-0">
+            <span className="text-sm font-semibold tracking-tight text-zinc-100 block truncate max-w-[170px] sm:max-w-[240px]">
+              {displayName}
             </span>
-            <span className="text-[11px] font-mono tracking-wide text-emerald-400 block -mt-0.5">
-              B2B Lead Gen & Scraping
+            <span className="text-[11px] font-mono tracking-wide text-emerald-400 block -mt-0.5 truncate max-w-[170px] sm:max-w-[240px]">
+              {displayTitle}
             </span>
           </div>
         </button>

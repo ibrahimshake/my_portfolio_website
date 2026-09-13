@@ -18,7 +18,8 @@ import {
   Volume2,
   VolumeX,
   X,
-  Radio
+  Radio,
+  KeyRound
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { playMessageChime } from '../../lib/sound';
@@ -130,6 +131,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       badge: unreadCount > 0 ? `${unreadCount}` : undefined,
       isPulse: unreadCount > 0
     },
+    { id: 'security', label: 'Admin Security', icon: KeyRound },
     { id: 'settings', label: 'Settings & DB', icon: Settings },
   ];
 

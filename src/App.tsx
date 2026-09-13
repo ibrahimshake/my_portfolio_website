@@ -82,6 +82,26 @@ export default function App() {
     return () => { isMounted = false; };
   }, []);
 
+  // Real-time synchronization when profile is updated in CMS
+  useEffect(() => {
+    const handleProfileUpdated = (e: any) => {
+      if (e.detail) {
+        setProfile(e.detail);
+      }
+    };
+    window.addEventListener('portfolio-profile-updated', handleProfileUpdated);
+    return () => window.removeEventListener('portfolio-profile-updated', handleProfileUpdated);
+  }, []);
+
+  // Re-verify profile on navigation
+  useEffect(() => {
+    if (!currentPath.startsWith('/admin')) {
+      api.getProfile().then(prof => {
+        if (prof) setProfile(prof);
+      }).catch(() => {});
+    }
+  }, [currentPath]);
+
   const isAdminRoute = currentPath.startsWith('/admin');
 
   // Router resolution
@@ -109,6 +129,7 @@ export default function App() {
       else if (currentPath.includes('/profile')) subTab = 'profile';
       else if (currentPath.includes('/resume')) subTab = 'resume';
       else if (currentPath.includes('/messages')) subTab = 'messages';
+      else if (currentPath.includes('/security')) subTab = 'security';
       else if (currentPath.includes('/settings')) subTab = 'settings';
 
       return <AdminDashboardPage navigate={navigate} subTab={subTab} />;
@@ -168,7 +189,7 @@ export default function App() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-zinc-950">
       {/* Show Navbar on non-admin routes */}
       {!isAdminRoute && (
-        <Navbar currentPath={currentPath} navigate={navigate} />
+        <Navbar currentPath={currentPath} navigate={navigate} profile={profile} />
       )}
 
       {/* Main Content Area */}

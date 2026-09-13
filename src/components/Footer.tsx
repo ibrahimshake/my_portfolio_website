@@ -22,7 +22,7 @@ export const Footer: React.FC<FooterProps> = ({ profile, navigate }) => {
                 <Database className="h-4 w-4" />
               </div>
               <span className="font-semibold text-sm text-zinc-100">
-                {profile?.fullName || 'Ibrahim Shakes Huvo'}
+                {profile?.fullName || 'Ibrahim Shake Shuvo'}
               </span>
             </div>
 

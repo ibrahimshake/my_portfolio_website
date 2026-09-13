@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, User, KeyRound, AlertCircle, ArrowLeft, Database, ShieldCheck } from 'lucide-react';
+import { Lock, User, KeyRound, AlertCircle, ArrowLeft, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { api } from '../../lib/api';
 
 interface AdminLoginProps {
@@ -8,8 +8,9 @@ interface AdminLoginProps {
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, navigate }) => {
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('leadgen2026!');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +25,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, navigate
       await api.login(username, password);
       onLoginSuccess();
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials or login attempt rejected.');
+      setError(err.message || 'Invalid username or password.');
     } finally {
       setLoading(false);
     }
@@ -54,7 +55,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, navigate
               Admin CMS Authentication
             </h1>
             <p className="text-xs text-zinc-400">
-              Sign in to manage projects, lead sample spreadsheets, and profile content.
+              Sign in to manage projects, lead sample spreadsheets, and portfolio content.
             </p>
           </div>
 
@@ -76,10 +77,11 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, navigate
                 <input
                   type="text"
                   required
+                  autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 pl-9 pr-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
-                  placeholder="admin"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 pl-9 pr-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                  placeholder="Enter administrator username"
                 />
               </div>
             </div>
@@ -91,20 +93,33 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, navigate
               <div className="relative">
                 <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 pl-9 pr-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
-                  placeholder="••••••••"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 pl-9 pr-10 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                  placeholder="Enter administrator password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300 transition-colors focus:outline-none"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 text-xs font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40"
+              className="w-full py-2.5 px-4 text-xs font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 cursor-pointer"
             >
               <Lock className="h-4 w-4" />
               <span>{loading ? 'Authenticating...' : 'Sign In to Dashboard'}</span>
@@ -112,11 +127,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, navigate
 
           </form>
 
-          {/* Seed Notice */}
-          <div className="p-3 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] text-zinc-400 space-y-1">
-            <span className="font-semibold text-zinc-200 block">Default Credentials:</span>
-            <div>Username: <code className="text-emerald-400 font-mono">admin</code></div>
-            <div>Password: <code className="text-emerald-400 font-mono">leadgen2026!</code></div>
+          {/* Security Notice */}
+          <div className="p-3 rounded-lg bg-zinc-950/80 border border-zinc-800/80 text-[11px] text-zinc-500 flex items-center gap-2.5">
+            <ShieldCheck className="h-4 w-4 text-emerald-500/80 shrink-0" />
+            <span>Secure administrative portal protected by rate-limiting and encrypted session authentication.</span>
           </div>
 
         </div>

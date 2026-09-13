@@ -29,7 +29,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ profile, navigate }) => {
           Professional Background
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight">
-          About Ibrahim Shakes Huvo
+          About {profile?.fullName || 'Ibrahim Shake Shuvo'}
         </h1>
         <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
           Specializing in automated web data collection, Python browser scripting, and verified B2B lead list engineering.
@@ -141,7 +141,7 @@ Whether navigating complex single-page apps with Playwright/Selenium or architec
                 className="h-28 w-28 rounded-2xl object-cover mx-auto border-2 border-emerald-500/40 shadow-lg"
               />
               <h3 className="text-lg font-bold text-zinc-100 mt-4">
-                {profile?.fullName || 'Ibrahim Shakes Huvo'}
+                {profile?.fullName || 'Ibrahim Shake Shuvo'}
               </h3>
               <p className="text-xs text-emerald-400 font-mono">
                 {profile?.title || 'Lead Gen & Web Scraping Specialist'}

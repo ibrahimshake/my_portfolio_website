@@ -36,6 +36,34 @@ export const HomePage: React.FC<HomePageProps> = ({
   const featuredSamples = leadSamples.filter(s => s.featured).slice(0, 2);
   const displayServices = services.slice(0, 3);
 
+  const renderHeroTitle = () => {
+    const raw = profile?.title || 'B2B Lead Generation & Data Scraping Specialist';
+    if (raw.includes('&')) {
+      const idx = raw.indexOf('&');
+      const firstPart = raw.slice(0, idx + 1);
+      const secondPart = raw.slice(idx + 1).trim();
+      return (
+        <>
+          {firstPart} <br />
+          <span className="text-emerald-400">{secondPart}</span>
+        </>
+      );
+    }
+    const words = raw.trim().split(/\s+/);
+    if (words.length > 3) {
+      const splitAt = Math.ceil(words.length / 2);
+      const first = words.slice(0, splitAt).join(' ');
+      const second = words.slice(splitAt).join(' ');
+      return (
+        <>
+          {first} <br />
+          <span className="text-emerald-400">{second}</span>
+        </>
+      );
+    }
+    return <span className="text-emerald-400">{raw}</span>;
+  };
+
   return (
     <div className="space-y-24 py-8 sm:py-12">
       
@@ -47,14 +75,18 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 text-emerald-400 text-xs font-mono">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-              <span>Available for Freelance & Contract Projects</span>
+              <span>{profile?.availabilityStatus || 'Available for Freelance & Contract Projects'}</span>
             </div>
 
-            {/* Title */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-zinc-100 leading-tight">
-              B2B Lead Generation & <br />
-              <span className="text-emerald-400">Data Scraping Specialist</span>
-            </h1>
+            {/* Title with Greeting */}
+            <div className="space-y-2">
+              <span className="text-xs sm:text-sm font-mono text-emerald-400 tracking-wider block">
+                Hi, I'm <strong className="text-zinc-100 font-semibold">{profile?.fullName || 'Ibrahim Shake Shuvo'}</strong>
+              </span>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-zinc-100 leading-tight">
+                {renderHeroTitle()}
+              </h1>
+            </div>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-zinc-400 max-w-2xl leading-relaxed">
@@ -113,15 +145,15 @@ export const HomePage: React.FC<HomePageProps> = ({
               <div className="flex items-center gap-4 pb-6 border-b border-zinc-800">
                 <img
                   src={profile?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
-                  alt={profile?.fullName || 'Ibrahim Shakes Huvo'}
+                  alt={profile?.fullName || 'Ibrahim Shake Shuvo'}
                   className="h-16 w-16 rounded-xl object-cover border border-zinc-700"
                 />
                 <div>
                   <h3 className="text-base font-semibold text-zinc-100">
-                    {profile?.fullName || 'Ibrahim Shakes Huvo'}
+                    {profile?.fullName || 'Ibrahim Shake Shuvo'}
                   </h3>
                   <p className="text-xs text-emerald-400 font-mono">
-                    Specialist & Pipeline Engineer
+                    {profile?.title || 'B2B Lead Gen & Data Scraping Specialist'}
                   </p>
                   <p className="text-[11px] text-zinc-400 flex items-center gap-1 mt-1">
                     <MapPin className="h-3 w-3" />

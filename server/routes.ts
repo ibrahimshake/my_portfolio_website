@@ -310,10 +310,12 @@ apiRouter.post('/admin/login', async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
+    const adminUsername = await auth.getAdminUsername();
+
     res.json({
       success: true,
       token: result.token,
-      username: auth.getAdminUsername()
+      username: adminUsername
     });
   } catch (err: any) {
     res.status(500).json({ error: 'Login process error' });
@@ -329,7 +331,7 @@ apiRouter.post('/admin/logout', (req, res) => {
 });
 
 // Check Session Status
-apiRouter.get('/admin/me', (req, res) => {
+apiRouter.get('/admin/me', async (req, res) => {
   const authHeader = req.headers.authorization;
   const cookieToken = req.cookies?.['admin_session'];
   let token: string | null = null;
@@ -344,11 +346,43 @@ apiRouter.get('/admin/me', (req, res) => {
     return res.status(401).json({ authenticated: false });
   }
 
+  const currentUsername = await auth.getAdminUsername();
+
   res.json({
     authenticated: true,
-    username: auth.getAdminUsername(),
+    username: currentUsername,
     dbProvider: db.getProviderName()
   });
+});
+
+// Change Admin Credentials (Username and/or Password)
+apiRouter.post('/admin/change-credentials', auth.requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newUsername, newPassword } = req.body;
+
+    if (!currentPassword) {
+      return res.status(400).json({ error: 'Please enter your current password to authorize this change.' });
+    }
+
+    if (!newUsername && !newPassword) {
+      return res.status(400).json({ error: 'Please provide a new username or new password to update.' });
+    }
+
+    const result = await auth.changeCredentials(currentPassword, newUsername, newPassword);
+
+    if (!result.success) {
+      return res.status(400).json({ error: result.error || 'Failed to update credentials' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Admin credentials updated successfully.',
+      username: result.username
+    });
+  } catch (err: any) {
+    console.error('Change credentials error:', err);
+    res.status(500).json({ error: 'Failed to update credentials. Please try again.' });
+  }
 });
 
 // Dashboard Stats

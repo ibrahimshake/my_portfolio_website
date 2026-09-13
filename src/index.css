@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+  }
+  header, footer, nav, button, .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .resume-paper {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  .resume-paper * {
+    color: #111827 !important;
+    background: transparent !important;
+    border-color: #e5e7eb !important;
+  }
+}

@@ -32,6 +32,7 @@ export const AdminProfile: React.FC = () => {
       const updated = await api.updateProfile(profile);
       setProfile(updated);
       setSuccessMsg('Profile information updated successfully.');
+      window.dispatchEvent(new CustomEvent('portfolio-profile-updated', { detail: updated }));
     } catch (err: any) {
       setError(err.message || 'Failed to update profile');
     } finally {

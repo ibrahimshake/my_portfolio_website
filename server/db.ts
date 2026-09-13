@@ -1,6 +1,7 @@
 import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 import type { Profile, Project, LeadSample, Service, Skill, Experience, ResumeData, ContactMessage } from '../src/types.js';
 
 const { Pool } = pg;
@@ -29,7 +30,7 @@ if (isPostgresConfigured) {
 // Initial Realistic Seed Data
 const initialProfile: Profile = {
   id: 'default',
-  fullName: 'Ibrahim Shakes Huvo',
+  fullName: 'Ibrahim Shake Shuvo',
   title: 'B2B Lead Generation & Data Scraping Specialist',
   shortBio: 'I build automated web scrapers, data pipelines, and verify targeted B2B contact lists using Python, Playwright, Selenium, and modern data processing workflows.',
   fullAbout: `I am a dedicated B2B Lead Generation and Web Data Scraping specialist with extensive experience in automated data collection, browser automation, and data hygiene.
@@ -507,6 +508,11 @@ class MemoryStore {
       createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
     }
   ];
+  adminAuth = {
+    username: process.env.ADMIN_USERNAME || 'admin',
+    passwordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'leadgen2026!', 10),
+    updatedAt: new Date().toISOString()
+  };
 }
 
 const memoryStore = new MemoryStore();
@@ -594,12 +600,26 @@ export async function initDatabase() {
         data JSONB NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS admin_auth (
+        id VARCHAR(50) PRIMARY KEY,
+        username VARCHAR(100) NOT NULL,
+        password_hash TEXT NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // Seed if empty
     const checkProfile = await client.query(`SELECT COUNT(*) FROM site_profile`);
     if (parseInt(checkProfile.rows[0].count) === 0) {
       await client.query(`INSERT INTO site_profile (id, data) VALUES ($1, $2)`, ['default', JSON.stringify(initialProfile)]);
+    } else {
+      // Auto-correct initial typo if present
+      const profRes = await client.query(`SELECT data FROM site_profile WHERE id = 'default'`);
+      if (profRes.rows[0] && profRes.rows[0].data?.fullName === 'Ibrahim Shakes Huvo') {
+        const fixedData = { ...profRes.rows[0].data, fullName: 'Ibrahim Shake Shuvo' };
+        await client.query(`UPDATE site_profile SET data = $1 WHERE id = 'default'`, [JSON.stringify(fixedData)]);
+      }
     }
 
     const checkProjects = await client.query(`SELECT COUNT(*) FROM projects`);
@@ -646,6 +666,17 @@ export async function initDatabase() {
     const checkResume = await client.query(`SELECT COUNT(*) FROM resume_data`);
     if (parseInt(checkResume.rows[0].count) === 0) {
       await client.query(`INSERT INTO resume_data (id, data) VALUES ($1, $2)`, ['default', JSON.stringify(initialResume)]);
+    }
+
+    const checkAdminAuth = await client.query(`SELECT COUNT(*) FROM admin_auth`);
+    if (parseInt(checkAdminAuth.rows[0].count) === 0) {
+      const defUser = process.env.ADMIN_USERNAME || 'admin';
+      const defPass = process.env.ADMIN_PASSWORD || 'leadgen2026!';
+      const defHash = bcrypt.hashSync(defPass, 10);
+      await client.query(
+        `INSERT INTO admin_auth (id, username, password_hash) VALUES ($1, $2, $3)`,
+        ['default', defUser, defHash]
+      );
     }
 
     client.release();
@@ -1005,5 +1036,45 @@ export const db = {
       dbConnected: isConnectedToPostgres,
       dbProvider: db.getProviderName()
     };
+  },
+
+  // ADMIN CREDENTIALS
+  getAdminAuth: async (): Promise<{ username: string; passwordHash: string }> => {
+    if (isConnectedToPostgres && pool) {
+      try {
+        const res = await pool.query(`SELECT username, password_hash FROM admin_auth WHERE id = 'default'`);
+        if (res.rows[0]) {
+          return {
+            username: res.rows[0].username,
+            passwordHash: res.rows[0].password_hash
+          };
+        }
+      } catch (e) {
+        console.error('Error fetching admin auth from postgres:', e);
+      }
+    }
+    return {
+      username: memoryStore.adminAuth.username,
+      passwordHash: memoryStore.adminAuth.passwordHash
+    };
+  },
+  updateAdminAuth: async (username: string, passwordHash: string): Promise<boolean> => {
+    if (isConnectedToPostgres && pool) {
+      try {
+        await pool.query(
+          `INSERT INTO admin_auth (id, username, password_hash, updated_at) VALUES ('default', $1, $2, NOW())
+           ON CONFLICT (id) DO UPDATE SET username = $1, password_hash = $2, updated_at = NOW()`,
+          [username, passwordHash]
+        );
+      } catch (e) {
+        console.error('Error updating admin auth in postgres:', e);
+      }
+    }
+    memoryStore.adminAuth = {
+      username,
+      passwordHash,
+      updatedAt: new Date().toISOString()
+    };
+    return true;
   }
 };

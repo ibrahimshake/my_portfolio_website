@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Download, 
   Printer, 
@@ -9,9 +9,12 @@ import {
   Briefcase, 
   CheckCircle,
   ExternalLink,
-  Terminal
+  Terminal,
+  Check,
+  FileDown
 } from 'lucide-react';
 import type { Profile, ResumeData, Experience, Project } from '../types';
+import { generateResumePDF } from '../lib/pdfGenerator';
 
 interface ResumePageProps {
   profile: Profile | null;
@@ -28,15 +31,45 @@ export const ResumePage: React.FC<ResumePageProps> = ({
   projects,
   navigate
 }) => {
-  const handlePrint = () => {
-    window.print();
+  const [downloading, setDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  const handleDownloadPDF = () => {
+    setDownloading(true);
+    try {
+      generateResumePDF(profile, resume, experience);
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 4000);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+      // Fallback to window print
+      try {
+        window.print();
+      } catch (e) {
+        console.error('Print fallback failed:', e);
+      }
+    } finally {
+      setDownloading(false);
+    }
   };
+
+  const handlePrint = () => {
+    try {
+      window.print();
+    } catch (err) {
+      console.warn('Browser print blocked or unsupported in frame, generating PDF instead:', err);
+      handleDownloadPDF();
+    }
+  };
+
+  const defaultName = profile?.fullName || 'Ibrahim Shake Shuvo';
+  const defaultTitle = profile?.title || 'B2B Lead Generation & Data Scraping Specialist';
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 space-y-8">
       
       {/* Action Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800 no-print">
         <div>
           <span className="text-xs font-mono uppercase tracking-wider text-emerald-400">
             Curriculum Vitae
@@ -44,45 +77,82 @@ export const ResumePage: React.FC<ResumePageProps> = ({
           <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-100 mt-1">
             Professional Resume
           </h1>
+          <p className="text-xs text-zinc-400 mt-1">
+            Verified qualifications, technical proficiencies, and career history.
+          </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Direct PDF Download */}
           <button
-            onClick={handlePrint}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors"
+            id="download-resume-pdf-btn"
+            onClick={handleDownloadPDF}
+            disabled={downloading}
+            className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 active:scale-95 rounded-lg transition-all shadow-md shadow-emerald-950/40 cursor-pointer"
           >
-            <Printer className="h-4 w-4" />
-            <span>Print / Save PDF</span>
+            {downloadSuccess ? (
+              <>
+                <Check className="h-4 w-4 text-zinc-950 stroke-[3]" />
+                <span>PDF Downloaded!</span>
+              </>
+            ) : downloading ? (
+              <>
+                <div className="h-4 w-4 rounded-full border-2 border-zinc-950 border-t-transparent animate-spin" />
+                <span>Generating PDF...</span>
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                <span>Download PDF (.pdf)</span>
+              </>
+            )}
+          </button>
+
+          {/* Browser Print / Save Dialog */}
+          <button
+            id="print-resume-btn"
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors cursor-pointer"
+          >
+            <Printer className="h-4 w-4 text-zinc-400" />
+            <span>Print View</span>
           </button>
 
           <button
             onClick={() => navigate('/contact')}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-zinc-300 bg-zinc-900/60 hover:bg-zinc-800 hover:text-zinc-100 border border-zinc-800 rounded-lg transition-colors cursor-pointer"
           >
-            <Mail className="h-4 w-4" />
+            <Mail className="h-4 w-4 text-emerald-400" />
             <span>Hire Specialist</span>
           </button>
         </div>
       </div>
 
+      {downloadSuccess && (
+        <div className="p-3 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-xs text-emerald-300 flex items-center gap-2.5 no-print animate-fade-in">
+          <FileDown className="h-4 w-4 text-emerald-400 shrink-0" />
+          <span>Your resume PDF has been generated and saved to your device.</span>
+        </div>
+      )}
+
       {/* Resume Document Canvas (Styled like a modern technical resume) */}
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8 sm:p-12 space-y-10 shadow-2xl backdrop-blur-sm">
+      <div className="resume-paper rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8 sm:p-12 space-y-10 shadow-2xl backdrop-blur-sm">
         
         {/* Header Strip */}
         <div className="border-b border-zinc-800 pb-8 flex flex-col sm:flex-row sm:items-start justify-between gap-6">
           <div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight">
-              {profile?.fullName || 'Ibrahim Shakes Huvo'}
+              {defaultName}
             </h2>
             <p className="text-sm font-mono text-emerald-400 mt-1">
-              {profile?.title || 'B2B Lead Generation & Data Scraping Specialist'}
+              {defaultTitle}
             </p>
           </div>
 
           <div className="space-y-1.5 text-xs text-zinc-400 sm:text-right font-mono">
             <div>{profile?.email || 'ibrahimshakeshuvo6@gmail.com'}</div>
             <div>{profile?.location || 'Remote / Worldwide'}</div>
-            <div className="text-emerald-400 font-semibold">{profile?.availabilityStatus || 'Available'}</div>
+            <div className="text-emerald-400 font-semibold">{profile?.availabilityStatus || 'Available for Projects'}</div>
           </div>
         </div>
 

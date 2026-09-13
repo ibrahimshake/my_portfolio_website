@@ -11,6 +11,7 @@ import { AdminProfile } from './admin/AdminProfile';
 import { AdminResume } from './admin/AdminResume';
 import { AdminMessages } from './admin/AdminMessages';
 import { AdminSettings } from './admin/AdminSettings';
+import { AdminSecurity } from './admin/AdminSecurity';
 import { api } from '../lib/api';
 
 interface AdminDashboardPageProps {
@@ -92,7 +93,8 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ navigate
       {currentTab === 'profile' && <AdminProfile />}
       {currentTab === 'resume' && <AdminResume />}
       {currentTab === 'messages' && <AdminMessages initialSelectedId={selectedMessageId} />}
-      {currentTab === 'settings' && <AdminSettings />}
+      {currentTab === 'security' && <AdminSecurity />}
+      {currentTab === 'settings' && <AdminSettings onNavigateSecurity={() => setCurrentTab('security')} />}
     </AdminLayout>
   );
 };

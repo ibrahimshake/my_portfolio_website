@@ -149,6 +149,21 @@ export const api = {
     return api.checkSession();
   },
 
+  changeCredentials: async (payload: {
+    currentPassword: string;
+    newUsername?: string;
+    newPassword?: string;
+  }): Promise<{ success: boolean; message: string; username: string }> => {
+    const res = await fetch('/api/admin/change-credentials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to update credentials');
+    return data;
+  },
+
   getStats: async (): Promise<SiteStats> => {
     const res = await fetch('/api/admin/stats', { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Failed to load stats');

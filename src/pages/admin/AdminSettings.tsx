@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, Database, HardDrive, ShieldCheck, Server, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Settings, Database, HardDrive, ShieldCheck, Server, RefreshCw, CheckCircle2, AlertTriangle, KeyRound, ArrowRight } from 'lucide-react';
 import { api } from '../../lib/api';
 import type { SiteStats } from '../../types';
 
-export const AdminSettings: React.FC = () => {
+interface AdminSettingsProps {
+  onNavigateSecurity?: () => void;
+}
+
+export const AdminSettings: React.FC<AdminSettingsProps> = ({ onNavigateSecurity }) => {
   const [stats, setStats] = useState<SiteStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,6 +28,33 @@ export const AdminSettings: React.FC = () => {
         <p className="text-xs text-zinc-400 mt-0.5">
           Review environment parameters, storage providers, and Vercel serverless configurations.
         </p>
+      </div>
+
+      {/* Admin Security Banner */}
+      <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="h-10 w-10 rounded-lg bg-emerald-950 border border-emerald-500/40 flex items-center justify-center shrink-0 text-emerald-400">
+            <KeyRound className="h-5 w-5" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-zinc-100">
+              Admin Login Credentials & Security
+            </h3>
+            <p className="text-xs text-zinc-400 leading-relaxed max-w-xl">
+              You can change your administrative login username and password at any time. New credentials are saved in your database and default credentials have been hidden from the login screen.
+            </p>
+          </div>
+        </div>
+
+        {onNavigateSecurity && (
+          <button
+            onClick={onNavigateSecurity}
+            className="px-4 py-2 rounded-lg bg-emerald-400 hover:bg-emerald-300 text-zinc-950 text-xs font-bold transition-colors shrink-0 flex items-center gap-2 shadow-md shadow-emerald-950/40 cursor-pointer"
+          >
+            <span>Manage Credentials</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
