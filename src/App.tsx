@@ -193,7 +193,7 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1">
+      <main className="flex-1 pb-16 sm:pb-0">
         {loading ? (
           <div className="min-h-[70vh] flex items-center justify-center">
             <div className="text-center space-y-3">

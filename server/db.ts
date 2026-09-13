@@ -1083,5 +1083,93 @@ export const db = {
       updatedAt: new Date().toISOString()
     };
     return true;
+  },
+
+  // DATABASE BACKUP & RESTORE
+  exportFullDatabase: async () => {
+    const profile = await db.getProfile();
+    const projects = await db.getProjects(true);
+    const leadSamples = await db.getLeadSamples(true);
+    const services = await db.getServices();
+    const skills = await db.getSkills();
+    const experiences = await db.getExperience();
+    const resume = await db.getResume();
+    return {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      profile,
+      projects,
+      leadSamples,
+      services,
+      skills,
+      experiences,
+      resume
+    };
+  },
+
+  importFullDatabase: async (data: any) => {
+    if (data.profile) {
+      await db.updateProfile(data.profile);
+    }
+    if (Array.isArray(data.projects)) {
+      const allProjects = await db.getProjects(true);
+      for (const p of data.projects) {
+        const existing = allProjects.find(item => item.id === p.id);
+        if (existing) {
+          await db.updateProject(p.id, p);
+        } else {
+          await db.createProject(p);
+        }
+      }
+    }
+    if (Array.isArray(data.leadSamples)) {
+      const allSamples = await db.getLeadSamples(true);
+      for (const ls of data.leadSamples) {
+        const existing = allSamples.find(item => item.id === ls.id);
+        if (existing) {
+          await db.updateLeadSample(ls.id, ls);
+        } else {
+          await db.createLeadSample(ls);
+        }
+      }
+    }
+    if (Array.isArray(data.services)) {
+      for (const s of data.services) {
+        await db.saveService(s);
+      }
+    }
+    if (Array.isArray(data.skills)) {
+      for (const sk of data.skills) {
+        await db.saveSkill(sk);
+      }
+    }
+    if (Array.isArray(data.experiences)) {
+      for (const exp of data.experiences) {
+        await db.saveExperience(exp);
+      }
+    }
+    if (data.resume) {
+      await db.updateResume(data.resume);
+    }
+    return true;
+  },
+
+  connectCustomDatabase: async (connectionString: string) => {
+    try {
+      const testPool = new Pool({
+        connectionString,
+        ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false },
+        connectionTimeoutMillis: 7000
+      });
+      const client = await testPool.connect();
+      client.release();
+      pool = testPool;
+      isConnectedToPostgres = true;
+      process.env.DATABASE_URL = connectionString;
+      await initDatabase();
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to connect to database' };
+    }
   }
 };

@@ -159,7 +159,23 @@ apiRouter.get('/lead-samples/:slug/download', async (req, res) => {
       return res.status(403).json({ error: 'Public download is disabled for this sample dataset.' });
     }
 
-    // If a physical/cached file is linked
+    // 1. Check if complete binary file is stored directly in database record
+    if (sample.fileBase64 && sample.fileBase64.trim().length > 0) {
+      try {
+        const fileBuffer = Buffer.from(sample.fileBase64, 'base64');
+        const filename = sample.originalFilename || `${sample.slug}_sample.${sample.fileType}`;
+        const mimeType = sample.fileType === 'csv'
+          ? 'text/csv; charset=utf-8'
+          : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Type', mimeType);
+        return res.send(fileBuffer);
+      } catch (err) {
+        console.warn('Error reading fileBase64 from database record:', err);
+      }
+    }
+
+    // 2. If a physical/cached file is linked in memory
     if (sample.fileUrl && sample.fileUrl.startsWith('/api/lead-samples/download/')) {
       const fileId = sample.fileUrl.replace('/api/lead-samples/download/', '');
       const cached = storage.getFile(fileId);
@@ -518,12 +534,14 @@ apiRouter.post('/admin/lead-samples/upload', auth.requireAuth, upload.single('fi
     const parsed = storage.parseSpreadsheet(buffer, filename);
     const fileId = 'file_' + Date.now();
     const downloadUrl = await storage.saveFile(fileId, filename, buffer, req.file.mimetype);
+    const fileBase64 = buffer.toString('base64');
 
     res.json({
       fileId,
       filename,
       fileType,
       fileSize: req.file.size,
+      fileBase64,
       columns: parsed.columns,
       totalRows: parsed.totalRows,
       previewRows: parsed.previewRows,
@@ -560,6 +578,7 @@ apiRouter.post('/admin/lead-samples', auth.requireAuth, async (req, res) => {
       source: body.source || 'Public Web Extraction',
       fileType: body.fileType === 'csv' ? 'csv' : 'xlsx',
       fileUrl: body.fileUrl || '',
+      fileBase64: body.fileBase64 || '',
       originalFilename: body.originalFilename || 'sample_data.csv',
       fileSize: body.fileSize,
       previewRows: Array.isArray(body.previewRows) ? body.previewRows : [],
@@ -761,5 +780,46 @@ apiRouter.delete('/admin/messages/:id', auth.requireAuth, async (req, res) => {
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: 'Failed to delete message' });
+  }
+});
+
+// FULL DATABASE BACKUP EXPORT & RESTORE IMPORT
+apiRouter.get('/admin/db/export', auth.requireAuth, async (req, res) => {
+  try {
+    const dump = await db.exportFullDatabase();
+    res.setHeader('Content-Disposition', `attachment; filename="leadgen_database_backup_${Date.now()}.json"`);
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(dump, null, 2));
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to export database backup' });
+  }
+});
+
+apiRouter.post('/admin/db/import', auth.requireAuth, async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data || typeof data !== 'object') {
+      return res.status(400).json({ error: 'Invalid backup file format' });
+    }
+    await db.importFullDatabase(data);
+    res.json({ success: true, message: 'Database restored successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to import database backup' });
+  }
+});
+
+apiRouter.post('/admin/db/connect', auth.requireAuth, async (req, res) => {
+  try {
+    const { connectionString } = req.body;
+    if (!connectionString || typeof connectionString !== 'string') {
+      return res.status(400).json({ error: 'PostgreSQL connection string is required' });
+    }
+    const result = await db.connectCustomDatabase(connectionString);
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+    res.json({ success: true, message: 'Connected to PostgreSQL database successfully!' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Connection failed' });
   }
 });

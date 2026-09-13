@@ -472,5 +472,45 @@ export const api = {
     });
     if (!res.ok) throw new Error('Failed to delete message');
     return res.json();
+  },
+
+  // Full Database Backup & Migration
+  exportDatabaseBackup: async () => {
+    const res = await fetch('/api/admin/db/export', { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('Failed to download database backup');
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `portfolio_database_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    return true;
+  },
+
+  importDatabaseBackup: async (backupJson: any) => {
+    const res = await fetch('/api/admin/db/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(backupJson)
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to import backup');
+    }
+    return res.json();
+  },
+
+  connectDatabaseUrl: async (connectionString: string) => {
+    const res = await fetch('/api/admin/db/connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ connectionString })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Connection failed');
+    return data;
   }
 };

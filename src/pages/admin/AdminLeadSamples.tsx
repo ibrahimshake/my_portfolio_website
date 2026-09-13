@@ -41,6 +41,7 @@ export const AdminLeadSamples: React.FC = () => {
     source: '',
     fileType: 'xlsx' as 'csv' | 'xlsx',
     fileUrl: '',
+    fileBase64: '',
     originalFilename: '',
     fileSize: 0,
     previewRows: [] as Record<string, any>[],
@@ -92,6 +93,7 @@ export const AdminLeadSamples: React.FC = () => {
         fileType: parsed.fileType,
         fileSize: parsed.fileSize,
         fileUrl: parsed.downloadUrl,
+        fileBase64: parsed.fileBase64 || '',
         leadCount: parsed.totalRows || 100,
         dataFields: parsed.columns,
         publicColumns: parsed.recommendedPublicColumns || parsed.columns.slice(0, 5),
@@ -126,6 +128,7 @@ export const AdminLeadSamples: React.FC = () => {
       source: sample.source,
       fileType: sample.fileType,
       fileUrl: sample.fileUrl || '',
+      fileBase64: sample.fileBase64 || '',
       originalFilename: sample.originalFilename,
       fileSize: sample.fileSize || 0,
       previewRows: sample.previewRows || [],
@@ -397,6 +400,35 @@ export const AdminLeadSamples: React.FC = () => {
             </div>
 
             <form onSubmit={handleSave} className="space-y-4">
+              
+              {/* Spreadsheet File Attachment & Replacement Box */}
+              <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 shrink-0">
+                    <FileSpreadsheet className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-zinc-100 truncate">
+                      {formData.originalFilename || 'No spreadsheet attached yet'}
+                    </p>
+                    <p className="text-[11px] text-zinc-400">
+                      {formData.leadCount > 0 
+                        ? `${formData.leadCount} rows extracted • Saved in database • ${formData.fileType.toUpperCase()}`
+                        : 'Upload an .xlsx or .csv directly from your phone or PC'}
+                    </p>
+                  </div>
+                </div>
+                <label className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 rounded-lg cursor-pointer transition-colors shrink-0">
+                  <Upload className="h-3.5 w-3.5" />
+                  <span>{formData.originalFilename ? 'Replace XLSX' : 'Choose XLSX / CSV'}</span>
+                  <input
+                    type="file"
+                    accept=".csv, .xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">

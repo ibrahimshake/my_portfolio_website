@@ -56,6 +56,7 @@ export interface LeadSample {
   source: string;
   fileType: 'csv' | 'xlsx';
   fileUrl?: string;
+  fileBase64?: string;
   originalFilename: string;
   fileSize?: number;
   previewRows: Record<string, any>[];

@@ -65,13 +65,13 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   return (
-    <div className="space-y-24 py-8 sm:py-12">
+    <div className="space-y-16 sm:space-y-24 py-6 sm:py-12">
       
       {/* 1. HERO SECTION */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-5 sm:space-y-6">
             {/* Pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 text-emerald-400 text-xs font-mono">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
@@ -83,22 +83,22 @@ export const HomePage: React.FC<HomePageProps> = ({
               <span className="text-xs sm:text-sm font-mono text-emerald-400 tracking-wider block">
                 Hi, I'm <strong className="text-zinc-100 font-semibold">{profile?.fullName || 'Ibrahim Shake Shuvo'}</strong>
               </span>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-zinc-100 leading-tight">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-zinc-100 leading-tight">
                 {renderHeroTitle()}
               </h1>
             </div>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg text-zinc-400 max-w-2xl leading-relaxed">
+            <p className="text-sm sm:text-base lg:text-lg text-zinc-400 max-w-2xl leading-relaxed">
               {profile?.shortBio || 
                 'I help businesses collect targeted B2B leads and structured web data using Python, browser automation, and modern data extraction techniques.'}
             </p>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            {/* Action Buttons (Full width on mobile, row on tablet/desktop) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1 sm:pt-2">
               <button
                 onClick={() => navigate('/projects')}
-                className="flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-colors shadow-lg shadow-emerald-950/40"
+                className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 text-xs sm:text-sm font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl sm:rounded-lg transition-colors shadow-lg shadow-emerald-950/40 cursor-pointer"
               >
                 <span>View My Projects</span>
                 <ArrowRight className="h-4 w-4" />
@@ -106,7 +106,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
               <button
                 onClick={() => navigate('/lead-samples')}
-                className="flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-medium text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors"
+                className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 text-xs sm:text-sm font-medium text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl sm:rounded-lg transition-colors cursor-pointer"
               >
                 <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
                 <span>View Lead Samples</span>
@@ -114,26 +114,26 @@ export const HomePage: React.FC<HomePageProps> = ({
 
               <button
                 onClick={() => navigate('/contact')}
-                className="flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 text-xs sm:text-sm font-medium text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
               >
                 <Mail className="h-4 w-4" />
-                <span>Contact Me</span>
+                <span>Contact Specialist</span>
               </button>
             </div>
 
-            {/* Key Quality Pillars */}
-            <div className="pt-6 border-t border-zinc-800/80 grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs text-zinc-400">
-              <div className="flex items-center gap-2">
+            {/* Key Quality Pillars (Clean badges on mobile) */}
+            <div className="pt-4 sm:pt-6 border-t border-zinc-800/80 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-xs text-zinc-400">
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-zinc-900/50 border border-zinc-800/80 sm:bg-transparent sm:border-0 sm:p-0">
                 <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
                 <span>Zero Hallucinated Leads</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-zinc-900/50 border border-zinc-800/80 sm:bg-transparent sm:border-0 sm:p-0">
                 <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>Verified Email Filters</span>
+                <span>Verified Email Deliverability</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-zinc-900/50 border border-zinc-800/80 sm:bg-transparent sm:border-0 sm:p-0">
                 <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>Clean Excel & CSV</span>
+                <span>Clean Excel (.xlsx) & CSV</span>
               </div>
             </div>
 

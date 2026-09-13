@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { Project } from '../../types';
 import { api } from '../../lib/api';
+import { ImageUploader } from '../../components/ImageUploader';
 
 export const AdminProjects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -432,16 +433,14 @@ export const AdminProjects: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-zinc-300 block">
-                  Project Image URL
-                </label>
-                <input
-                  type="text"
+              <div>
+                <ImageUploader
+                  label="Project Cover Image"
                   value={formData.projectImage}
-                  onChange={(e) => setFormData({ ...formData, projectImage: e.target.value })}
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-100 focus:border-emerald-500 focus:outline-none"
-                  placeholder="https://images.unsplash.com/..."
+                  onChange={(url) => setFormData({ ...formData, projectImage: url })}
+                  aspectRatio="video"
+                  helperText="Upload project screenshot or workflow diagram from your device."
+                  maxDimension={1200}
                 />
               </div>
 

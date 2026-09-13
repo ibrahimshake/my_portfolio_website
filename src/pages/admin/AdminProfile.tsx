@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { User, Check, AlertCircle, Save } from 'lucide-react';
 import type { Profile } from '../../types';
 import { api } from '../../lib/api';
+import { ImageUploader } from '../../components/ImageUploader';
 
 export const AdminProfile: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -137,13 +138,14 @@ export const AdminProfile: React.FC = () => {
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-zinc-300">Avatar / Profile Photo URL</label>
-          <input
-            type="text"
+        <div className="pt-1">
+          <ImageUploader
+            label="Avatar / Profile Photo (From Device or Link)"
             value={profile?.avatarUrl || ''}
-            onChange={(e) => setProfile(p => p ? { ...p, avatarUrl: e.target.value } : null)}
-            className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-100"
+            onChange={(url) => setProfile(p => p ? { ...p, avatarUrl: url } : null)}
+            aspectRatio="square"
+            helperText="Upload your face photo or headshot from your phone or laptop."
+            maxDimension={800}
           />
         </div>
 
