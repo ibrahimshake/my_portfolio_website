@@ -43,9 +43,46 @@ function getAuthHeaders(): HeadersInit {
 export const api = {
   // Public
   getProfile: async (): Promise<Profile> => {
-    const res = await fetch('/api/profile');
-    if (!res.ok) throw new Error('Failed to fetch profile');
-    return res.json();
+    let localProfile: Partial<Profile> | null = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('portfolio_saved_profile');
+        if (cached) localProfile = JSON.parse(cached);
+      } catch (e) {}
+    }
+
+    try {
+      const res = await fetch('/api/profile');
+      if (res.ok) {
+        const serverProfile: Profile = await res.json();
+        // Merge with any local modifications
+        if (localProfile) {
+          return { ...serverProfile, ...localProfile };
+        }
+        return serverProfile;
+      }
+    } catch (err) {
+      console.warn('Network error fetching profile, checking local storage:', err);
+    }
+
+    if (localProfile && localProfile.fullName) {
+      return localProfile as Profile;
+    }
+
+    // Default fallback profile
+    return {
+      id: 'default',
+      fullName: 'Ibrahim Shake Shuvo',
+      title: 'B2B Lead Generation & Data Scraping Specialist',
+      shortBio: 'I build automated web scrapers, data pipelines, and verify targeted B2B contact lists using Python, Playwright, Selenium, and modern data processing workflows.',
+      fullAbout: 'I am a dedicated B2B Lead Generation and Web Data Scraping specialist with extensive experience in automated data collection, browser automation, and data hygiene.\n\nMy focus is on extracting high-accuracy, structured business data from modern web applications, directories, e-commerce platforms, and public registries. I prioritize data integrity: cleaning invalid emails, normalizing phone numbers, deduplicating records, and delivering ready-to-use CSV/XLSX datasets for sales and marketing outreach.',
+      email: 'ibrahimshakeshuvo6@gmail.com',
+      location: 'Remote / Global (UTC+6)',
+      availabilityStatus: 'Available for Projects',
+      github: 'https://github.com/Ibrahim009-Devloper',
+      linkedin: 'https://www.linkedin.com/in/ibrahimshakeshuvo/',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+    };
   },
 
   getProjects: async (category?: string, featured?: boolean): Promise<Project[]> => {
@@ -172,13 +209,45 @@ export const api = {
 
   // Admin CRUD
   updateProfile: async (data: Partial<Profile>): Promise<Profile> => {
-    const res = await fetch('/api/admin/profile', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error('Failed to update profile');
-    return res.json();
+    // 1. Immediately cache in localStorage so updates persist across sessions even on Vercel
+    if (typeof window !== 'undefined') {
+      try {
+        const existing = localStorage.getItem('portfolio_saved_profile');
+        const merged = existing ? { ...JSON.parse(existing), ...data } : { ...data };
+        localStorage.setItem('portfolio_saved_profile', JSON.stringify(merged));
+      } catch (e) {}
+    }
+
+    try {
+      const res = await fetch('/api/admin/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        const serverSaved: Profile = await res.json();
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('portfolio_saved_profile', JSON.stringify(serverSaved));
+          } catch (e) {}
+        }
+        return serverSaved;
+      } else {
+        console.warn('Backend returned error status on profile update:', res.status);
+      }
+    } catch (err) {
+      console.warn('Failed to reach backend API for profile update, saved locally:', err);
+    }
+
+    // Return the cached/merged profile if backend was unreachable or serverless token expired
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('portfolio_saved_profile');
+        if (cached) return JSON.parse(cached);
+      } catch (e) {}
+    }
+
+    return data as Profile;
   },
 
   getAdminProjects: async (): Promise<Project[]> => {

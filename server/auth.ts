@@ -108,9 +108,9 @@ export const auth = {
       }
     }
 
-    // Create session token
-    const token = crypto.randomBytes(32).toString('hex');
+    // Create session token (HMAC signed for stateless verification in serverless environments like Vercel)
     const expiresAt = now + 7 * 24 * 60 * 60 * 1000; // 7 days
+    const token = auth.createStatelessToken(authenticatedUsername, expiresAt);
     activeSessions.set(token, { username: authenticatedUsername, expiresAt });
 
     return { success: true, token, username: authenticatedUsername };
@@ -182,16 +182,50 @@ export const auth = {
     return { success: true, username: targetUsername };
   },
 
-  // Validate session token
+  // Create HMAC signed token for serverless compatibility
+  createStatelessToken: (username: string, expiresAt: number): string => {
+    const secret = process.env.SESSION_SECRET || 'leadgen_ibrahim_portfolio_session_secret_2026';
+    const payload = `${username}:${expiresAt}`;
+    const hmac = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    return Buffer.from(`${payload}:${hmac}`).toString('base64url');
+  },
+
+  // Validate session token (supports both in-memory and stateless HMAC tokens)
   validateToken: (token?: string | null): boolean => {
     if (!token) return false;
+
+    // 1. Check in-memory session first
     const session = activeSessions.get(token);
-    if (!session) return false;
-    if (Date.now() > session.expiresAt) {
-      activeSessions.delete(token);
+    if (session) {
+      if (Date.now() > session.expiresAt) {
+        activeSessions.delete(token);
+        return false;
+      }
+      return true;
+    }
+
+    // 2. Fallback to stateless HMAC verification (for Vercel serverless containers)
+    try {
+      const decoded = Buffer.from(token, 'base64url').toString('utf8');
+      const parts = decoded.split(':');
+      if (parts.length !== 3) return false;
+      const [username, expiresAtStr, receivedHmac] = parts;
+      const expiresAt = parseInt(expiresAtStr, 10);
+      if (isNaN(expiresAt) || Date.now() > expiresAt) return false;
+
+      const secret = process.env.SESSION_SECRET || 'leadgen_ibrahim_portfolio_session_secret_2026';
+      const expectedHmac = crypto.createHmac('sha256', secret).update(`${username}:${expiresAt}`).digest('hex');
+
+      if (receivedHmac === expectedHmac) {
+        // Cache in local container memory
+        activeSessions.set(token, { username, expiresAt });
+        return true;
+      }
+    } catch {
       return false;
     }
-    return true;
+
+    return false;
   },
 
   // Invalidate token

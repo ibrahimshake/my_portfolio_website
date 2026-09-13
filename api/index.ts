@@ -17,9 +17,13 @@ async function ensureDb() {
   }
 }
 
-app.use('/api', async (req, res, next) => {
+// In Vercel serverless execution, the URL may arrive with or without the /api prefix
+app.use(async (req, res, next) => {
   await ensureDb();
   next();
-}, apiRouter);
+});
+
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 export default app;
