@@ -11,10 +11,15 @@ export const AdminProfile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  const [isCloudDb, setIsCloudDb] = useState(false);
+
   useEffect(() => {
-    api.getProfile()
-      .then(data => {
+    Promise.all([api.getProfile(), api.getStats().catch(() => null)])
+      .then(([data, s]) => {
         setProfile(data);
+        if (s?.databaseProvider?.includes('PostgreSQL')) {
+          setIsCloudDb(true);
+        }
         setLoading(false);
       })
       .catch(err => {
@@ -28,11 +33,17 @@ export const AdminProfile: React.FC = () => {
     if (!profile || saving) return;
     setSaving(true);
     setError(null);
+    setSuccessMsg(null);
 
     try {
       const updated = await api.updateProfile(profile);
       setProfile(updated);
-      setSuccessMsg('Profile information updated successfully.');
+      if (updated._persistedToCloud) {
+        setIsCloudDb(true);
+        setSuccessMsg('✅ Profile permanently saved to PostgreSQL Database! Visible across all devices and browsers.');
+      } else {
+        setSuccessMsg('⚠️ Profile saved in temporary container memory. (Note: To make updates permanent across all browsers & mobile on Vercel, connect a free PostgreSQL database in Settings).');
+      }
       window.dispatchEvent(new CustomEvent('portfolio-profile-updated', { detail: updated }));
     } catch (err: any) {
       setError(err.message || 'Failed to update profile');
@@ -55,6 +66,22 @@ export const AdminProfile: React.FC = () => {
         <p className="text-xs text-zinc-400 mt-0.5">
           Edit your headline, executive bio, contact email, and availability badge.
         </p>
+      </div>
+
+      {/* Database Persistence Status Badge */}
+      <div className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
+        isCloudDb 
+          ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-300' 
+          : 'bg-amber-950/20 border-amber-800/40 text-amber-300'
+      }`}>
+        <div className="flex items-center gap-2.5">
+          <span className={`h-2 w-2 rounded-full ${isCloudDb ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+          <span>
+            {isCloudDb 
+              ? 'PostgreSQL Cloud Database Connected — Any changes you save here are permanent and visible across all phones, tablets, and browsers.' 
+              : 'Database Notice: Currently running in local standby mode. For changes to persist on Vercel across all devices & browsers, add DATABASE_URL in Vercel or connect database in Settings.'}
+          </span>
+        </div>
       </div>
 
       {error && <div className="p-3 rounded-lg bg-red-950/30 text-xs text-red-300">{error}</div>}

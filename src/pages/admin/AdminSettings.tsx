@@ -191,6 +191,21 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ onNavigateSecurity
           </div>
         </div>
 
+        {/* Step by Step Guide in Bengali */}
+        <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-800/40 text-xs space-y-2 text-zinc-300">
+          <div className="font-semibold text-emerald-400 flex items-center gap-2">
+            <span>সব ব্রাউজার ও ডিভাইসে স্থায়ীভাবে ডাটা দেখানোর ৩টি সহজ ধাপ (Vercel):</span>
+          </div>
+          <ol className="list-decimal list-inside space-y-1.5 text-[11px] text-zinc-300 leading-relaxed">
+            <li><strong className="text-zinc-100">Neon.tech</strong> বা <strong className="text-zinc-100">Supabase</strong>-এ ফ্রি অ্যাকাউন্ট খুলে একটি ফ্রি PostgreSQL ডেটাবেস তৈরি করুন (সময় লাগবে ১ মিনিট, কোনো ক্রেডিট কার্ড লাগে না)।</li>
+            <li>সেখান থেকে আপনার ডেটাবেসের <code className="text-emerald-300 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">DATABASE_URL</code> (কানেকশন স্ট্রিং) কপি করুন।</li>
+            <li>আপনার <strong className="text-zinc-100">Vercel Dashboard</strong> &gt; <strong className="text-zinc-100">Settings</strong> &gt; <strong className="text-zinc-100">Environment Variables</strong>-এ গিয়ে Key হিসেবে <code className="text-emerald-300">DATABASE_URL</code> এবং Value হিসেবে আপনার লিঙ্কটি বসিয়ে সেভ করে একবার <strong className="text-zinc-100">Redeploy</strong> দিন।</li>
+          </ol>
+          <p className="text-[11px] text-emerald-400/90 pt-1">
+            💡 এটি সেট করার পর আপনি অ্যাডমিন থেকে যা-ই আপডেট করবেন তা মোবাইল, ল্যাপটপ, ট্যাবলেট বা যে কোনো ব্রাউজারে সাথে সাথে পার্মানেন্টলি দেখা যাবে।
+          </p>
+        </div>
+
         {/* Live Connect Form */}
         <form onSubmit={handleConnectDb} className="space-y-3 pt-2">
           <label className="text-xs font-medium text-zinc-200 block">

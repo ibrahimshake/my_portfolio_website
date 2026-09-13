@@ -519,8 +519,26 @@ const memoryStore = new MemoryStore();
 
 // Initialize Postgres Schema if pool exists
 export async function initDatabase() {
+  const dbUrl = process.env.DATABASE_URL?.trim();
+  if (!pool && dbUrl) {
+    try {
+      pool = new Pool({
+        connectionString: dbUrl,
+        ssl: dbUrl.includes('localhost') ? false : { rejectUnauthorized: false },
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 7000,
+      });
+      console.log('Database: Initialized PostgreSQL pool from DATABASE_URL.');
+    } catch (err) {
+      console.error('Failed to create PostgreSQL pool from DATABASE_URL:', err);
+      pool = null;
+    }
+  }
+
   if (!pool) {
     console.log('Database: Running in Fast In-Memory Fallback Mode (Set DATABASE_URL for Postgres)');
+    isConnectedToPostgres = false;
     return;
   }
 

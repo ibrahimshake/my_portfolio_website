@@ -43,30 +43,29 @@ function getAuthHeaders(): HeadersInit {
 export const api = {
   // Public
   getProfile: async (): Promise<Profile> => {
-    let localProfile: Partial<Profile> | null = null;
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem('portfolio_saved_profile');
-        if (cached) localProfile = JSON.parse(cached);
-      } catch (e) {}
-    }
-
     try {
       const res = await fetch('/api/profile');
       if (res.ok) {
         const serverProfile: Profile = await res.json();
-        // Merge with any local modifications
-        if (localProfile) {
-          return { ...serverProfile, ...localProfile };
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('portfolio_saved_profile', JSON.stringify(serverProfile));
+          } catch (e) {}
         }
         return serverProfile;
       }
     } catch (err) {
-      console.warn('Network error fetching profile, checking local storage:', err);
+      console.warn('Network error fetching profile, checking local storage fallback:', err);
     }
 
-    if (localProfile && localProfile.fullName) {
-      return localProfile as Profile;
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('portfolio_saved_profile');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.fullName) return parsed;
+        }
+      } catch (e) {}
     }
 
     // Default fallback profile
@@ -208,16 +207,7 @@ export const api = {
   },
 
   // Admin CRUD
-  updateProfile: async (data: Partial<Profile>): Promise<Profile> => {
-    // 1. Immediately cache in localStorage so updates persist across sessions even on Vercel
-    if (typeof window !== 'undefined') {
-      try {
-        const existing = localStorage.getItem('portfolio_saved_profile');
-        const merged = existing ? { ...JSON.parse(existing), ...data } : { ...data };
-        localStorage.setItem('portfolio_saved_profile', JSON.stringify(merged));
-      } catch (e) {}
-    }
-
+  updateProfile: async (data: Partial<Profile>): Promise<Profile & { _persistedToCloud?: boolean }> => {
     try {
       const res = await fetch('/api/admin/profile', {
         method: 'PUT',
@@ -225,7 +215,7 @@ export const api = {
         body: JSON.stringify(data)
       });
       if (res.ok) {
-        const serverSaved: Profile = await res.json();
+        const serverSaved: Profile & { _persistedToCloud?: boolean } = await res.json();
         if (typeof window !== 'undefined') {
           try {
             localStorage.setItem('portfolio_saved_profile', JSON.stringify(serverSaved));
@@ -233,21 +223,13 @@ export const api = {
         }
         return serverSaved;
       } else {
-        console.warn('Backend returned error status on profile update:', res.status);
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `Server failed with status ${res.status}`);
       }
-    } catch (err) {
-      console.warn('Failed to reach backend API for profile update, saved locally:', err);
+    } catch (err: any) {
+      console.warn('Profile update error:', err);
+      throw err;
     }
-
-    // Return the cached/merged profile if backend was unreachable or serverless token expired
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem('portfolio_saved_profile');
-        if (cached) return JSON.parse(cached);
-      } catch (e) {}
-    }
-
-    return data as Profile;
   },
 
   getAdminProjects: async (): Promise<Project[]> => {

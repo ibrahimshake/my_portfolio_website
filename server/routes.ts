@@ -419,7 +419,7 @@ apiRouter.get('/admin/stats', auth.requireAuth, async (req, res) => {
 apiRouter.put('/admin/profile', auth.requireAuth, async (req, res) => {
   try {
     const updated = await db.updateProfile(req.body);
-    res.json(updated);
+    res.json({ ...updated, _persistedToCloud: db.isPostgres() });
   } catch (err: any) {
     res.status(500).json({ error: 'Failed to update profile' });
   }
