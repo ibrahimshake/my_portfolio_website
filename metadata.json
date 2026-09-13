@@ -1,0 +1,6 @@
+{
+  "name": "B2B Lead Gen & Data Scraping Portfolio CMS",
+  "description": "Production-ready B2B lead generation & web scraping portfolio with real-time CSV/XLSX sample viewer, client showcase, and complete admin CMS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
